@@ -9,14 +9,6 @@ import SwiftUI
 import PartialSheet
 struct ContentView: View {
     
-    var dateFormater : DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm E, d MMM y"
-        formatter.dateStyle = .medium
-        formatter.locale = Locale(identifier: "en")
-        formatter.timeStyle = .medium
-        return formatter
-    }()
     @State var isPresented = false
     @State var currentId = ""
     @State var titlee = ""
@@ -24,7 +16,6 @@ struct ContentView: View {
     @State var toBeUpdatedTitle = ""
     @State var toBeUpdatedDes = ""
     @State var identifier = ""
-    @State var date = ""
     @StateObject  var vm : ViewModel
     
     var body: some View {
@@ -47,12 +38,12 @@ struct ContentView: View {
                     .cornerRadius(10)
                     .foregroundColor(.black)
                 Button {
-                    date = dateFormater.string(from: Date())
+                    
                     identifier = UUID().uuidString
-                    vm.http_request(HTTP_METHOD: "POST", id: identifier, date: date, toDoTitle: titlee, toDoDes: des, endPoint: nil)
+                    vm.http_request(HTTP_METHOD: "POST", id: identifier,toDoTitle: titlee, toDoDes: des, endPoint: nil)
                     
                     //  save the data into the list temporarily
-                    vm.toTos.append(ToDoPOST(_id: identifier, toDoTitle: titlee, toDoDes: des, date: date))
+                    vm.toTos.append(ToDoPOST(_id: identifier, toDoTitle: titlee, toDoDes: des, date: vm.dateFormater.string(from: Date())))
                 } label: {
                     RoundedRectangle(cornerRadius:20).foregroundColor(Color(.darkGray))
                         .frame(width: 300,height :40, alignment: .center)
@@ -87,7 +78,7 @@ struct ContentView: View {
                         Spacer()
                         Button(action: {
                             currentId = toDo._id
-                            vm.http_request(HTTP_METHOD: "DELETE", id: currentId, date: nil, toDoTitle: nil, toDoDes: nil, endPoint: currentId)
+                            vm.http_request(HTTP_METHOD: "DELETE", id: currentId, toDoTitle: nil, toDoDes: nil, endPoint: currentId)
                             print(currentId)
                             //  delete the data from the list temporarily
                             vm.toTos.removeAll{$0._id == currentId}
@@ -99,7 +90,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            vm.http_request(HTTP_METHOD: "GET", id: nil, date: nil, toDoTitle: nil, toDoDes: nil, endPoint: nil)
+            vm.http_request(HTTP_METHOD: "GET", id: nil, toDoTitle: nil, toDoDes: nil, endPoint: nil)
             }
         }
      
@@ -111,14 +102,14 @@ struct ContentView: View {
                   TextField("toDo des", text: $toBeUpdatedDes)
                       .frame(width: 350, height: 40)
                   Button {
-                      vm.http_request(HTTP_METHOD: "PATCH", id: currentId, date: dateFormater.string(from: Date()), toDoTitle: toBeUpdatedTitle, toDoDes: toBeUpdatedDes, endPoint: currentId)
+                      vm.http_request(HTTP_METHOD: "PATCH", id: currentId, toDoTitle: toBeUpdatedTitle, toDoDes: toBeUpdatedDes, endPoint: currentId)
                       print("#######"+currentId)
                       
                       //  delete the prev data from the list temporarily
                       vm.toTos.removeAll{$0._id == currentId}
                       
                       //  save updated data into the list temporarily
-                      vm.toTos.append( ToDoPOST(_id: currentId ,toDoTitle: toBeUpdatedTitle, toDoDes: toBeUpdatedDes, date: dateFormater.string(from: Date())))
+                      vm.toTos.append( ToDoPOST(_id: currentId ,toDoTitle: toBeUpdatedTitle, toDoDes: toBeUpdatedDes, date: vm.dateFormater.string(from: Date())))
                      
                   } label: {
                       RoundedRectangle(cornerRadius:20).foregroundColor(Color(.darkGray))

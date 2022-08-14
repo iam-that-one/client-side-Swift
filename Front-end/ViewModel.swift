@@ -11,7 +11,7 @@ import UIKit
 class ViewModel : ObservableObject{
     @Published var toTos : [ToDoPOST] = []
 
-    func http_request(HTTP_METHOD: String,id : String?,date:String?,toDoTitle : String?, toDoDes : String?, endPoint : String?){
+    func http_request(HTTP_METHOD: String,id : String?,toDoTitle : String?, toDoDes : String?, endPoint : String?){
        let  url = URL(string: "http://localhost:2000/toDos/\(endPoint ?? "")")!
         var request = URLRequest(url: url)
         request.setValue("authToken",forHTTPHeaderField: "Authorization")
@@ -19,12 +19,12 @@ class ViewModel : ObservableObject{
         request.httpMethod = HTTP_METHOD
         if HTTP_METHOD != "GET"{
             let encoder = JSONEncoder()
-            let body = ToDoPOST(_id:id ?? "" ,toDoTitle: toDoTitle ?? "", toDoDes: toDoDes ?? "", date: date ?? "")
+            let body = ToDoPOST(_id:id ?? "" ,toDoTitle: toDoTitle ?? "", toDoDes: toDoDes ?? "", date: dateFormater.string(from: Date()))
                 let jsonData = try? encoder.encode(body.self)
                 request.httpBody = jsonData
         }
         let session = URLSession.shared
-        let task = session.dataTask(with: request ){(data, response, error) in
+        let task = session.dataTask(with: request ){(data, _, error) in
             if let error = error {
                 print(error)
             }else{
@@ -47,5 +47,13 @@ class ViewModel : ObservableObject{
         }
         task.resume()
     }
+    var dateFormater : DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm E, d MMM y"
+        formatter.dateStyle = .medium
+        formatter.locale = Locale(identifier: "en")
+        formatter.timeStyle = .medium
+        return formatter
+    }()
 }
 
